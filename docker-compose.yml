@@ -1,0 +1,47 @@
+version: "3"
+services:
+  grafana:
+    image: grafana/grafana:7.0.0
+    container_name: grafana
+    restart: always
+    ports:
+      - 3000:3000
+    links:
+      - influxdb
+    volumes:
+      - grafana-volume:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: "admin"
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+  influxdb:
+    image: influxdb:1.8.0
+    container_name: influxdb
+    restart: always
+    ports:
+      - 8086:8086
+    volumes:
+      - influxdb-volume:/var/lib/influxdb
+    environment:
+      INFLUXDB_REPORTING_DISABLED: "true"
+      INFLUXDB_DATA_QUERY_LOG_ENABLED: "false"
+      INFLUXDB_DB: "metrics"
+      INFLUXDB_HTTP_LOG_ENABLED: "false"
+  envoy:
+    image: envoy-python
+    container_name: envoy
+    restart: always
+    environment:
+      PYTHONUNBUFFERED: "1"
+    links:
+      - influxdb
+  envoy-stream:
+    image: envoy-stream-python
+    container_name: envoy-stream
+    restart: always
+    environment:
+      PYTHONUNBUFFERED: "1"
+    links:
+      - influxdb
+volumes:
+  grafana-volume:
+  influxdb-volume:
